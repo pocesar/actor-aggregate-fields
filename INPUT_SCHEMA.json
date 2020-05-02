@@ -1,0 +1,33 @@
+{
+    "title": "Aggregate dataset fields",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "datasetId": {
+            "title": "Dataset ID",
+            "type": "string",
+            "example": "McBNJRgkkYGgghKAG",
+            "description": "The dataset id or name where to aggregate data",
+            "editor": "textfield"
+        },
+        "fields": {
+            "title": "Fields",
+            "type": "array",
+            "description": "The list of fields to aggregate data",
+            "editor": "stringList"
+        },
+        "split": {
+            "title": "Split field",
+            "type": "object",
+            "example": {
+                "myField": "-"
+            },
+            "description": "Split a field on a delimiter and treat as separated values",
+            "editor": "json"
+        }
+    },
+    "required": [
+        "datasetId",
+        "fields"
+    ]
+}

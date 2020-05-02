@@ -1,0 +1,27 @@
+{
+	"name": "actor-aggregate-fields",
+	"version": "0.1.0",
+	"description": "Aggregate all possible variations for the selected fields",
+	"dependencies": {
+		"apify": "^0.20.3"
+	},
+	"devDependencies": {
+		"@apify/eslint-config": "0.0.3",
+		"eslint": "^6.8.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/pocesar/actor-aggregate-fields.git"
+	},
+	"scripts": {
+		"start": "node src/main.js",
+		"lint": "eslint ./src --ext .js,.jsx",
+		"lint:fix": "eslint ./src --ext .js,.jsx --fix",
+		"test": "jest"
+	},
+	"author": {
+		"name": "Paulo Cesar",
+		"url": "https://github.com/pocesar"
+	},
+	"license": "Apache-2.0"
+}
