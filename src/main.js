@@ -34,10 +34,27 @@ Apify.main(async () => {
     } = await dataset.getInfo();
 
     const aggregate = {};
+    /** @type {any} */
+    const savedValues = (await Apify.getValue('SAVED_VALUES')) || {};
+    /** @type {number} */
+    let currentOffset = (await Apify.getValue('CURRENT_OFFSET')) || 0;
+
+    const persistState = async () => {
+        const serializable = {};
+
+        Object.entries(aggregate).forEach(([k, v]) => {
+            serializable[k] = [...v.values.values()]; // need to convert Set to array otherwise it will be an {}
+        });
+
+        await Apify.setValue('SAVED_VALUES', serializable);
+        await Apify.setValue('CURRENT_OFFSET', currentOffset);
+    };
+
+    Apify.events.on('persistState', persistState);
 
     for (const field of fields) {
         aggregate[field] = {
-            values: new Set(),
+            values: new Set(field in savedValues ? savedValues[field] : []),
             count: 0,
             min: 0,
             max: 0,
@@ -47,9 +64,11 @@ Apify.main(async () => {
 
     const splitMap = (str, toSplit, cb) => str.split(toSplit).forEach(cb);
 
-    log.info(`Aggregating data from ${cleanItemCount} items...`);
+    log.info(`Aggregating data from ${cleanItemCount} items from index ${currentOffset}...`);
 
     await dataset.forEach(async (item) => {
+        currentOffset++;
+
         for (const field of fields) {
             if (Array.isArray(item[field])) {
                 item[field].forEach((c) => {
@@ -71,9 +90,9 @@ Apify.main(async () => {
                 }
             }
         }
-    });
+    }, {}, currentOffset);
 
-    log.info('Generating output');
+    log.info('Writing OUTPUT...');
 
     await Apify.setValue('OUTPUT', Object.entries(aggregate).reduce((acc, [field, set]) => {
         const values = [...set.values.values()];
@@ -101,5 +120,7 @@ Apify.main(async () => {
         };
     }, {}));
 
-    log.info('Done, check OUTPUT');
+    await persistState();
+
+    log.info('Done, check OUTPUT on key value store');
 });

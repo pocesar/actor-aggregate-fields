@@ -1,13 +1,13 @@
 {
 	"name": "actor-aggregate-fields",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Aggregate all possible variations for the selected fields",
 	"dependencies": {
-		"apify": "^0.20.3"
+		"apify": "^0.21.0"
 	},
 	"devDependencies": {
-		"@apify/eslint-config": "0.0.3",
-		"eslint": "^6.8.0"
+		"@apify/eslint-config": "^0.1.0",
+		"eslint": "^7.4.0"
 	},
 	"repository": {
 		"type": "git",
