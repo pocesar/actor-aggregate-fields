@@ -1,6 +1,6 @@
 {
 	"name": "actor-aggregate-fields",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Aggregate all possible variations for the selected fields",
 	"dependencies": {
 		"apify": "^0.21.0"

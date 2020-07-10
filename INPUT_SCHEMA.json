@@ -16,6 +16,12 @@
             "description": "The list of fields to aggregate data",
             "editor": "stringList"
         },
+        "fieldNames": {
+            "title": "Return field names only, instead",
+            "description": "Return field names only, instead of field values",
+            "type": "boolean",
+            "editor": "checkbox"
+        },
         "split": {
             "title": "Split field",
             "type": "object",
@@ -27,7 +33,6 @@
         }
     },
     "required": [
-        "datasetId",
-        "fields"
+        "datasetId"
     ]
 }

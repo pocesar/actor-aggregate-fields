@@ -15,12 +15,13 @@ Apify.main(async () => {
 
     const {
         datasetId,
+        fieldNames = false,
         fields = [],
         split = {},
     } = input;
 
-    if (!fields || !fields.length) {
-        throw new Error('Missing required "fields" parameter');
+    if ((!fields || !fields.length) && !fieldNames) {
+        throw new Error('Missing required "fields" or "fieldNames" parameters');
     }
 
     if (!datasetId) {
@@ -52,7 +53,7 @@ Apify.main(async () => {
 
     Apify.events.on('persistState', persistState);
 
-    for (const field of fields) {
+    for (const field of (fieldNames ? ['__DEFAULT'] : fields)) {
         aggregate[field] = {
             values: new Set(field in savedValues ? savedValues[field] : []),
             count: 0,
@@ -69,24 +70,30 @@ Apify.main(async () => {
     await dataset.forEach(async (item) => {
         currentOffset++;
 
-        for (const field of fields) {
-            if (Array.isArray(item[field])) {
-                item[field].forEach((c) => {
-                    if (field in split && typeof c === 'string') {
-                        splitMap(c, split[field], (s) => {
+        if (fieldNames) {
+            Object.keys(item).forEach((fieldName) => {
+                aggregate['__DEFAULT'].values.add(fieldName); // eslint-disable-line dot-notation
+            });
+        } else {
+            for (const field of fields) {
+                if (Array.isArray(item[field])) {
+                    item[field].forEach((c) => {
+                        if (field in split && typeof c === 'string') {
+                            splitMap(c, split[field], (s) => {
+                                aggregate[field].values.add(s);
+                            });
+                        } else {
+                            aggregate[field].values.add(c);
+                        }
+                    });
+                } else if (field in item) {
+                    if (field in split && typeof item[field] === 'string') {
+                        splitMap(item[field], split[field], (s) => {
                             aggregate[field].values.add(s);
                         });
                     } else {
-                        aggregate[field].values.add(c);
+                        aggregate[field].values.add(item[field]);
                     }
-                });
-            } else if (field in item) {
-                if (field in split && typeof item[field] === 'string') {
-                    splitMap(item[field], split[field], (s) => {
-                        aggregate[field].values.add(s);
-                    });
-                } else {
-                    aggregate[field].values.add(item[field]);
                 }
             }
         }
@@ -107,15 +114,23 @@ Apify.main(async () => {
         });
         const min = lengths.reduce((o, i) => (i < o ? i : o), Infinity);
         const max = lengths.reduce((o, i) => (i > o ? i : o), -Infinity);
+        const value = {
+            values,
+            count: values.length,
+            min,
+            max,
+            average: values.length ? Math.round(lengths.reduce((o, v) => o + v, 0) / lengths.length) : 0,
+        };
+
+        if (fieldNames) {
+            return value;
+        }
 
         return {
             ...acc,
             [field]: {
-                values,
-                count: values.length,
-                min,
-                max,
-                average: values.length ? Math.round(lengths.reduce((o, v) => o + v, 0) / lengths.length) : 0,
+                ...value,
+                fieldName: field,
             },
         };
     }, {}));
