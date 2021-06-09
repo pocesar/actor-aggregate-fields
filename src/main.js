@@ -1,8 +1,7 @@
 const Apify = require('apify');
+const _ = require('lodash');
 
-const {
-    log,
-} = Apify.utils;
+const { log } = Apify.utils;
 
 Apify.main(async () => {
     const input = await Apify.getInput();
@@ -10,8 +9,6 @@ Apify.main(async () => {
     if (!input || typeof input !== 'object') {
         throw new Error('Missing input');
     }
-
-    log.info('Input', input);
 
     const {
         datasetId,
@@ -30,9 +27,7 @@ Apify.main(async () => {
 
     const dataset = await Apify.openDataset(datasetId);
 
-    const {
-        cleanItemCount,
-    } = await dataset.getInfo();
+    const { cleanItemCount } = await dataset.getInfo();
 
     const aggregate = {};
     /** @type {any} */
@@ -76,8 +71,10 @@ Apify.main(async () => {
             });
         } else {
             for (const field of fields) {
-                if (Array.isArray(item[field])) {
-                    item[field].forEach((c) => {
+                const path = _.get(item, field);
+
+                if (Array.isArray(path)) {
+                    path.forEach((c) => {
                         if (field in split && typeof c === 'string') {
                             splitMap(c, split[field], (s) => {
                                 aggregate[field].values.add(s);
@@ -86,13 +83,13 @@ Apify.main(async () => {
                             aggregate[field].values.add(c);
                         }
                     });
-                } else if (field in item) {
-                    if (field in split && typeof item[field] === 'string') {
-                        splitMap(item[field], split[field], (s) => {
+                } else if (path) {
+                    if (field in split && typeof path === 'string') {
+                        splitMap(path, split[field], (s) => {
                             aggregate[field].values.add(s);
                         });
                     } else {
-                        aggregate[field].values.add(item[field]);
+                        aggregate[field].values.add(path);
                     }
                 }
             }
